@@ -64,6 +64,20 @@ public class ColorHSL {
             saturation = C / (2 - 2 * lightness);
         }
 
+        // range control
+        if(saturation < 0) {
+            saturation = 0;
+        } else if(saturation > 1) {
+            saturation = 1;
+        }
+
+        // range control
+        if(lightness < 0) {
+            lightness = 0;
+        } else if(lightness > 1) {
+            lightness = 1;
+        }
+
         return new ColorHSL(hue, saturation, lightness);
     }
 
@@ -80,6 +94,8 @@ public class ColorHSL {
 
         float m = lightness - chroma / 2;
 
+//        System.out.println(hue + "\t" + saturation + "\t" + lightness);
+//        System.out.println(chroma + "\t" + X + "\t" + m);
         if(huePrime < 1) {
             return new Color(chroma + m, X + m, m);
         } else if(huePrime < 2) {
