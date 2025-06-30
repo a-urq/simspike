@@ -3,24 +3,26 @@ package com.ameliaWx.simSpike.math;
 import static com.ameliaWx.simSpike.math.ComplexNumber.I;
 
 public class FourierTransform1D {
-    private ComplexNumber[] amplitudes;
-    private float dE; // frequency differential (E looks kinda like a greek xi I guess)
+    public ComplexNumber[] complexAmplitudes;
+    public float[] amplitudes;
+    public float[] phases; // units: radians
+    public float dE; // frequency differential (E looks kinda like a greek xi I guess)
 
     public FourierTransform1D(float[] samples, float dx) {
-        new FourierTransform1D(samples, dx, 1);
-    }
+        this.complexAmplitudes = new ComplexNumber[samples.length];
+        this.amplitudes = new float[samples.length];
+        this.phases = new float[samples.length];
+        this.dE = dx / samples.length;
 
-    public FourierTransform1D(float[] samples, float dx, float deltaX) {
-        this.amplitudes = new ComplexNumber[samples.length];
-        this.dE = deltaX / samples.length;
-
-        for(int i = 0; i < amplitudes.length; i++) {
+        for(int i = 0; i < complexAmplitudes.length; i++) {
             float xi = i * dE;
-            amplitudes[i] = testAtFrequency(samples, dx, xi);
+            complexAmplitudes[i] = complexAmplitudeAtFrequency(samples, dx, xi);
+            amplitudes[i] = complexAmplitudes[i].absoluteValue();
+            phases[i] = (float) Math.atan2(complexAmplitudes[i].im, complexAmplitudes[i].re);
         }
     }
 
-    public ComplexNumber testAtFrequency(float[] samples, float dx, float xi) {
+    public ComplexNumber complexAmplitudeAtFrequency(float[] samples, float dx, float xi) {
         ComplexNumber amplitude = ComplexNumber.ZERO;
 
         for(int i = 0; i < samples.length; i++) {
@@ -32,8 +34,13 @@ public class FourierTransform1D {
             ComplexNumber e_phi = ComplexNumber.exp(phaseAngle);
             ComplexNumber dA = e_phi.mult(f_x * dx);
 
+//            System.out.printf("f(x): %.2f xi: %.2f phi: %.2fi, e^phi: ", f_x, xi, phaseAngle.im);
+            System.out.println(e_phi);
+
             amplitude = amplitude.add(dA);
         }
+
+        amplitude = amplitude.mult(1.0f / samples.length);
 
         return amplitude;
     }

@@ -58,4 +58,8 @@ public class ComplexNumber {
     public float absoluteValue() {
         return (float) Math.hypot(re, im);
     }
+
+    public String toString() {
+        return String.format("%.2f + %.2fi", re, im);
+    }
 }
