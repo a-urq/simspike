@@ -50,9 +50,19 @@ public class ComplexNumber {
 
         return new ComplexNumber(re, im);
     }
+
     // euler's formula, theta in radians
     public static ComplexNumber exp_i(float theta) {
         return ComplexNumber.exp(new ComplexNumber(0, theta));
+    }
+
+    // theta in radians
+    public ComplexNumber conjugate() {
+        return new ComplexNumber(re, -im);
+    }
+
+    public ComplexNumber reciprocal() {
+        return conjugate().mult((float) (1/Math.pow(absoluteValue(), 2)));
     }
 
     public float absoluteValue() {
@@ -60,6 +70,6 @@ public class ComplexNumber {
     }
 
     public String toString() {
-        return String.format("%.2f + %.2fi", re, im);
+        return String.format("%.2f %s %.2fi", re, (im < 0) ? "-": "+", Math.abs(im));
     }
 }

@@ -3,11 +3,13 @@ package com.ameliaWx.simSpike.test;
 import com.ameliaWx.simSpike.math.ComplexNumber;
 import com.ameliaWx.simSpike.math.FourierTransform1D;
 
-import java.util.Arrays;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 
 public class FourierTest {
-    public static void main(String[] args) {
-        testComplexMath();
+    public static void main(String[] args) throws FileNotFoundException {
+//        testComplexMath();
         testFourier1D();
     }
 
@@ -32,14 +34,48 @@ public class FourierTest {
         System.out.println("e^z3: " + ComplexNumber.exp(z3));
     }
 
-    public static void testFourier1D() {
-        float[] samples = generateSamplesFromWave(20, 1, 3, 5);
+    public static void testFourier1D() throws FileNotFoundException {
+//        float[] samples = generateSamplesFromWave(100, 1, 3, 5);
+        float[] samples = generateSamplesFromRect(100);
 
-        System.out.println(Arrays.toString(samples));
+//        System.out.println(Arrays.toString(samples));
 
-        FourierTransform1D transform = new FourierTransform1D(samples, 1);
+        FourierTransform1D transform = new FourierTransform1D(samples, 1, 0.0f, 10);
 
+//        System.out.println(Arrays.toString(transform.amplitudes));
+//        System.out.println(Arrays.toString(transform.phases));
 
+        new File("fourier-test-outputs/").mkdirs();
+
+        try (PrintWriter pw = new PrintWriter("fourier-test-outputs/inputs.csv")) {
+            for(int i = 0; i < samples.length; i++) {
+                pw.printf("%.6f, %.6f\n", (float) i, samples[i]);
+            }
+        }
+
+        try (PrintWriter pw = new PrintWriter("fourier-test-outputs/amplitudes.csv")) {
+            for (int i = 0; i < transform.amplitudes.length; i++) {
+                pw.printf("%.6f, %.6f\n", (float) i * transform.dw + transform.w0, transform.amplitudes[i]);
+            }
+        }
+
+        try (PrintWriter pw = new PrintWriter("fourier-test-outputs/phases.csv")) {
+            for (int i = 0; i < transform.amplitudes.length; i++) {
+                pw.printf("%.6f, %.6f\n", (float) i * transform.dw + transform.w0, transform.phases[i]);
+            }
+        }
+
+        try (PrintWriter pw = new PrintWriter("fourier-test-outputs/amplitudes_re.csv")) {
+            for (int i = 0; i < transform.amplitudes.length; i++) {
+                pw.printf("%.6f, %.6f\n", (float) i * transform.dw + transform.w0, transform.complexAmplitudes[i].re);
+            }
+        }
+
+        try (PrintWriter pw = new PrintWriter("fourier-test-outputs/amplitudes_im.csv")) {
+            for (int i = 0; i < transform.amplitudes.length; i++) {
+                pw.printf("%.6f, %.6f\n", (float) i * transform.dw + transform.w0, transform.complexAmplitudes[i].im);
+            }
+        }
     }
 
     private static float[] generateSamplesFromWave(int length, int... freqs) {
@@ -50,10 +86,24 @@ public class FourierTest {
 
             float sample = 0;
             for(int f = 0; f < freqs.length; f++) {
-                sample += (float) Math.sin(freqs[f] * phaseAngle);
+                sample += (float) (1.0f / freqs[f] * Math.sin(freqs[f] * phaseAngle));
             }
 
             samples[i] = sample;
+        }
+
+        return samples;
+    }
+
+    private static float[] generateSamplesFromRect(int length) {
+        float[] samples = new float[length];
+
+        for(int i = 0; i < samples.length; i++) {
+            if(i >= length * 3 / 8 && i <= length * 5 / 8) {
+                samples[i] = 1;
+            } else {
+                samples[i] = 0;
+            }
         }
 
         return samples;
