@@ -5,9 +5,15 @@ import static com.ameliaWx.simSpike.math.ComplexNumber.I;
 import static com.ameliaWx.simSpike.math.ComplexNumber.ZERO;
 
 public class Diffraction {
-    public float fieldAtDistance(Aperture a, float wavelengthNm, int x1, int y1, int z) {
-        float dy0 = a.yMax / a.apertureMap[0].length;
-        float dx0 = a.xMax / a.apertureMap.length;
+    public static float irradianceAtDistance(Aperture a, float wavelengthNm, float x1, float y1, float z) {
+        ComplexNumber field = fieldAtDistance(a, wavelengthNm, x1, y1, z);
+        float fieldAmplitude = field.absoluteValue();
+        return (float) Math.pow(fieldAmplitude, 2);
+    }
+
+    public static ComplexNumber fieldAtDistance(Aperture a, float wavelengthNm, float x1, float y1, float z) {
+        float dy0 = 0.5f * a.yMax / a.apertureMap[0].length;
+        float dx0 = 0.5f * a.xMax / a.apertureMap.length;
 
         int i = 0;
         int j = 0;
@@ -18,15 +24,16 @@ public class Diffraction {
                 ComplexNumber h = h(x1, x0, y1, y0, z, wavelengthNm);
 
                 ComplexNumber integrand = h.mult(a.apertureMap[i][j] * dx0 * dy0);
+                sum.add(integrand);
                 j++;
             }
             i++;
         }
 
-        return sum.re;
+        return sum;
     }
 
-    public ComplexNumber h(float x1, float x0, float y1, float y0, float z, float wavelengthNm) {
+    public static ComplexNumber h(float x1, float x0, float y1, float y0, float z, float wavelengthNm) {
         float wavelengthM = (float) (wavelengthNm / Math.pow(10, 9));
         float k = (float) (1 / wavelengthM); // wavenumber
         float r01 = r01(x1, x0, y1, y0, z);
@@ -36,7 +43,7 @@ public class Diffraction {
         return euler.mult(coef);
     }
 
-    public float r01(float x1, float x0, float y1, float y0, float z) {
+    public static float r01(float x1, float x0, float y1, float y0, float z) {
         return (float) Math.sqrt(Math.pow(z, 2) + Math.pow(x0 - x1, 2) + Math.pow(y0 - y1, 2));
     }
 }

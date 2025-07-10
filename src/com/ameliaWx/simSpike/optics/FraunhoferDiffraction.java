@@ -5,12 +5,18 @@ import static com.ameliaWx.simSpike.math.ComplexNumber.I;
 import static com.ameliaWx.simSpike.math.ComplexNumber.ZERO;
 
 public class FraunhoferDiffraction {
-    public float fieldAtDistance(Aperture a, float wavelengthNm, int x1, int y1, int z) {
-        float dy0 = a.yMax / a.apertureMap[0].length;
-        float dx0 = a.xMax / a.apertureMap.length;
+    public static float irradianceAtDistance(Aperture a, float wavelengthNm, float x1, float y1, float z) {
+        ComplexNumber field = fieldAtDistance(a, wavelengthNm, x1, y1, z);
+        float fieldAmplitude = field.absoluteValue();
+        return (float) Math.pow(fieldAmplitude, 2);
+    }
+
+    public static ComplexNumber fieldAtDistance(Aperture a, float wavelengthNm, float x1, float y1, float z) {
+        float dy0 = 0.5f * a.yMax / a.apertureMap[0].length;
+        float dx0 = 0.5f * a.xMax / a.apertureMap.length;
 
         float wavelengthM = (float) (wavelengthNm / Math.pow(10, 9));
-        float k = (float) (1 / wavelengthM); // wavenumber
+        float k = (float) (2 * Math.PI / wavelengthM); // wavenumber
 
         int i = 0;
         int j = 0;
@@ -35,6 +41,6 @@ public class FraunhoferDiffraction {
             i++;
         }
 
-        return sum.re;
+        return sum;
     }
 }
