@@ -12,17 +12,18 @@ public class FraunhoferDiffraction {
     }
 
     public static ComplexNumber fieldAtDistance(Aperture a, float wavelengthNm, float x1, float y1, float z) {
-        float dy0 = 0.5f * a.yMax / a.apertureMap[0].length;
-        float dx0 = 0.5f * a.xMax / a.apertureMap.length;
+        float dy0 = 2.0f * a.yMax / (a.apertureMap[0].length - 1);
+        float dx0 = 2.0f * a.xMax / (a.apertureMap.length - 1);
 
-        float wavelengthM = (float) (wavelengthNm / Math.pow(10, 9));
-        float k = (float) (2 * Math.PI / wavelengthM); // wavenumber
+        float wavelengthMm = (float) (wavelengthNm / Math.pow(10, 6));
+        float k = (float) (2 * Math.PI / wavelengthMm); // wavenumber
 
-        int i = 0;
+        int i;
         int j = 0;
 
         ComplexNumber sum = ZERO;
         for(float y0 = -a.yMax; y0 <= a.yMax; y0+=dy0) {
+            i = 0;
             for(float x0 = -a.xMax; x0 <= a.xMax; x0+=dx0) {
                 float dotProd = x0 * x1 + y0 * y1;
                 float kz = -k/z;
@@ -35,12 +36,11 @@ public class FraunhoferDiffraction {
 
                 ComplexNumber integrand = expI.mult(dx0 * dy0); // mult by area element
 
-                sum.add(integrand);
-                j++;
+                sum = sum.add(integrand);
+                i++;
             }
-            i++;
+            j++;
         }
-
         return sum;
     }
 }

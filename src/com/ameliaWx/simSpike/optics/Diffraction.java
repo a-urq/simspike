@@ -20,14 +20,15 @@ public class Diffraction {
 
         ComplexNumber sum = ZERO;
         for(float y0 = -a.yMax; y0 <= a.yMax; y0+=dy0) {
+            i = 0;
             for(float x0 = -a.xMax; x0 <= a.xMax; x0+=dx0) {
                 ComplexNumber h = h(x1, x0, y1, y0, z, wavelengthNm);
 
                 ComplexNumber integrand = h.mult(a.apertureMap[i][j] * dx0 * dy0);
                 sum.add(integrand);
-                j++;
+                i++;
             }
-            i++;
+            j++;
         }
 
         return sum;
