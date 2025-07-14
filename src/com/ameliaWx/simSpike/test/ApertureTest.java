@@ -16,7 +16,8 @@ public class ApertureTest {
     }
 
     public static void testHSTAperture() throws IOException {
-        BufferedImage testAperture = ImageIO.read(new File("test-apertures/double-slit-aperture.png"));
+        long startTime = System.currentTimeMillis();
+        BufferedImage testAperture = ImageIO.read(new File("test-apertures/double-slit-aperture-huge.png"));
 
         Aperture hstAperture = new Aperture(testAperture, 1, 1);
 
@@ -25,6 +26,9 @@ public class ApertureTest {
         ImageIO.write(renderPSF(psf, 1.0f), "PNG", new File("diffraction-tests/double-slit-diffraction-g1-0.png"));
         ImageIO.write(renderPSF(psf, 2.2f), "PNG", new File("diffraction-tests/double-slit-diffraction-g2-2.png"));
         ImageIO.write(renderPSF(psf, 4.0f), "PNG", new File("diffraction-tests/double-slit-diffraction-g4-0.png"));
+        long endTime = System.currentTimeMillis();
+
+        System.out.printf("PSF Test Time: %.3f s", (endTime - startTime)/1000.0);
     }
 
     private static BufferedImage renderPSF(PointSpreadFunction psf) {

@@ -56,7 +56,7 @@ public class PointSpreadFunction {
         float dy1 = 2.0f * a.yMax / (a.apertureMap[0].length - 1);
         float x1_0 = -a.xMax;
         float y1_0 = -a.yMax;
-        final float Z = 100.0f; // must be at least twice the pixel width of the aperture map to avoid nyquisting (at least before interpolation)
+        final float Z = 100.0f; // must be at least the pixel width of the aperture map to avoid nyquisting (at least before interpolation being implemented)
         for(int i = 0; i < psfRed.length; i++) {
             for(int j = 0; j < psfRed[0].length; j++) {
                 System.out.println(i + "\t" + j);
