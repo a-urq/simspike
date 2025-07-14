@@ -1,14 +1,13 @@
 package com.ameliaWx.simSpike.test;
 
 import com.ameliaWx.simSpike.optics.Aperture;
-import com.ameliaWx.simSpike.optics.DiffractionKernel;
+import com.ameliaWx.simSpike.optics.PointSpreadFunction;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 
 public class ApertureTest {
     public static void main(String[] args) throws IOException {
@@ -16,18 +15,20 @@ public class ApertureTest {
     }
 
     public static void testHSTAperture() throws IOException {
-        BufferedImage testAperture = ImageIO.read(new File("test-apertures/circle-aperture-small.png"));
+        BufferedImage testAperture = ImageIO.read(new File("test-apertures/double-slit-aperture.png"));
 
         Aperture hstAperture = new Aperture(testAperture, 1, 1);
 
-        DiffractionKernel kernel = new DiffractionKernel(hstAperture);
+        PointSpreadFunction kernel = new PointSpreadFunction(hstAperture, true);
 
-        ImageIO.write(renderKernel(kernel.kernelRed), "PNG", new File("diffraction-tests/circleSmall-diffraction-red.png"));
-        ImageIO.write(renderKernel(kernel.kernelYellow), "PNG", new File("diffraction-tests/circleSmall-diffraction-yellow.png"));
-        ImageIO.write(renderKernel(kernel.kernelGreen), "PNG", new File("diffraction-tests/circleSmall-diffraction-green.png"));
-        ImageIO.write(renderKernel(kernel.kernelCyan), "PNG", new File("diffraction-tests/circleSmall-diffraction-cyan.png"));
-        ImageIO.write(renderKernel(kernel.kernelBlue), "PNG", new File("diffraction-tests/circleSmall-diffraction-blue.png"));
-        ImageIO.write(renderKernel(kernel.kernelViolet), "PNG", new File("diffraction-tests/circleSmall-diffraction-violet.png"));
+        System.exit(0);
+
+        ImageIO.write(renderKernel(kernel.psfRed), "PNG", new File("diffraction-tests/double-slit-diffraction-red.png"));
+        ImageIO.write(renderKernel(kernel.psfYellow), "PNG", new File("diffraction-tests/double-slit-diffraction-yellow.png"));
+        ImageIO.write(renderKernel(kernel.psfGreen), "PNG", new File("diffraction-tests/double-slit-diffraction-green.png"));
+        ImageIO.write(renderKernel(kernel.psfCyan), "PNG", new File("diffraction-tests/double-slit-diffraction-cyan.png"));
+        ImageIO.write(renderKernel(kernel.psfBlue), "PNG", new File("diffraction-tests/double-slit-diffraction-blue.png"));
+        ImageIO.write(renderKernel(kernel.psfViolet), "PNG", new File("diffraction-tests/double-slit-diffraction-violet.png"));
     }
 
     private static BufferedImage renderKernel(float[][] kernel) {
@@ -42,7 +43,7 @@ public class ApertureTest {
                     luminosity = 1;
                 }
 
-                luminosity = gammaCorrect(luminosity, 1.5f);
+                luminosity = gammaCorrect(luminosity, 2.2f);
                 g.setColor(new Color(luminosity, luminosity, luminosity));
                 g.fillRect(i, j, 1, 1);
             }

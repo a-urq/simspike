@@ -41,7 +41,6 @@ public class ComplexNumber {
         return new ComplexNumber(re, im);
     }
 
-    // theta in radians
     public static ComplexNumber exp(ComplexNumber z) {
         float expRe = (float) Math.exp(z.re);
 
