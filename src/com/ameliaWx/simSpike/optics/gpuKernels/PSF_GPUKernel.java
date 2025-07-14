@@ -1,7 +1,6 @@
 package com.ameliaWx.simSpike.optics.gpuKernels;
 
 import com.ameliaWx.simSpike.optics.Aperture;
-import com.ameliaWx.simSpike.optics.FraunhoferDiffraction;
 import com.aparapi.Kernel;
 
 public class PSF_GPUKernel extends Kernel {
