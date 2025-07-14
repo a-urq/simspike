@@ -1,5 +1,6 @@
 package com.ameliaWx.simSpike.test;
 
+import com.ameliaWx.simSpike.color.ColorRYGCBV;
 import com.ameliaWx.simSpike.optics.Aperture;
 import com.ameliaWx.simSpike.optics.PointSpreadFunction;
 
@@ -19,16 +20,37 @@ public class ApertureTest {
 
         Aperture hstAperture = new Aperture(testAperture, 1, 1);
 
-        PointSpreadFunction kernel = new PointSpreadFunction(hstAperture, true);
+        PointSpreadFunction psf = new PointSpreadFunction(hstAperture, false);
 
-        System.exit(0);
+        ImageIO.write(renderPSF(psf, 1.0f), "PNG", new File("diffraction-tests/double-slit-diffraction-g1-0.png"));
+        ImageIO.write(renderPSF(psf, 2.2f), "PNG", new File("diffraction-tests/double-slit-diffraction-g2-2.png"));
+        ImageIO.write(renderPSF(psf, 4.0f), "PNG", new File("diffraction-tests/double-slit-diffraction-g4-0.png"));
+    }
 
-        ImageIO.write(renderKernel(kernel.psfRed), "PNG", new File("diffraction-tests/double-slit-diffraction-red.png"));
-        ImageIO.write(renderKernel(kernel.psfYellow), "PNG", new File("diffraction-tests/double-slit-diffraction-yellow.png"));
-        ImageIO.write(renderKernel(kernel.psfGreen), "PNG", new File("diffraction-tests/double-slit-diffraction-green.png"));
-        ImageIO.write(renderKernel(kernel.psfCyan), "PNG", new File("diffraction-tests/double-slit-diffraction-cyan.png"));
-        ImageIO.write(renderKernel(kernel.psfBlue), "PNG", new File("diffraction-tests/double-slit-diffraction-blue.png"));
-        ImageIO.write(renderKernel(kernel.psfViolet), "PNG", new File("diffraction-tests/double-slit-diffraction-violet.png"));
+    private static BufferedImage renderPSF(PointSpreadFunction psf) {
+        return renderPSF(psf, 1.0f);
+    }
+
+    private static BufferedImage renderPSF(PointSpreadFunction psf, float gamma) {
+        ColorRYGCBV[][] colors = new ColorRYGCBV[psf.psfRed.length][psf.psfRed[0].length];
+        BufferedImage img = new BufferedImage(colors.length, colors[0].length, BufferedImage.TYPE_3BYTE_BGR);
+        Graphics2D g = img.createGraphics();
+
+        for(int i = 0; i < colors.length; i++) {
+            for (int j = 0; j < colors[i].length; j++) {
+                colors[i][j] = new ColorRYGCBV(gammaCorrect(psf.psfRed[i][j], gamma),
+                        gammaCorrect(psf.psfYellow[i][j], gamma),
+                        gammaCorrect(psf.psfGreen[i][j], gamma),
+                        gammaCorrect(psf.psfCyan[i][j], gamma),
+                        gammaCorrect(psf.psfBlue[i][j], gamma),
+                        gammaCorrect(psf.psfViolet[i][j], gamma));
+
+                g.setColor(colors[i][j].toRGB());
+                g.fillRect(i, j, 1, 1);
+            }
+        }
+
+        return img;
     }
 
     private static BufferedImage renderKernel(float[][] kernel) {
