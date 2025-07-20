@@ -15,17 +15,21 @@ public class ApertureTest {
         testHSTAperture();
     }
 
+    private static final String apertureName = "test-aperture-big";
+    private static final boolean useGPU = true;
     public static void testHSTAperture() throws IOException {
         long startTime = System.currentTimeMillis();
-        BufferedImage testAperture = ImageIO.read(new File("test-apertures/double-slit-aperture-huge.png"));
+        BufferedImage testAperture = ImageIO.read(new File("test-apertures/" + apertureName + ".png"));
 
         Aperture hstAperture = new Aperture(testAperture, 1, 1);
 
-        PointSpreadFunction psf = new PointSpreadFunction(hstAperture, false);
+        PointSpreadFunction psf = new PointSpreadFunction(hstAperture, useGPU);
 
-        ImageIO.write(renderPSF(psf, 1.0f), "PNG", new File("diffraction-tests/double-slit-diffraction-g1-0.png"));
-        ImageIO.write(renderPSF(psf, 2.2f), "PNG", new File("diffraction-tests/double-slit-diffraction-g2-2.png"));
-        ImageIO.write(renderPSF(psf, 4.0f), "PNG", new File("diffraction-tests/double-slit-diffraction-g4-0.png"));
+        String caseTestName = apertureName + (useGPU ? "-gpu" : "");
+
+//        ImageIO.write(renderPSF(psf, 1.0f), "PNG", new File("diffraction-tests/double-slit-diffraction-g1-0.png"));
+        ImageIO.write(renderPSF(psf, 2.2f), "PNG", new File("diffraction-tests/" + caseTestName + "-g2-2.png"));
+//        ImageIO.write(renderPSF(psf, 4.0f), "PNG", new File("diffraction-tests/double-slit-diffraction-g4-0.png"));
         long endTime = System.currentTimeMillis();
 
         System.out.printf("PSF Test Time: %.3f s", (endTime - startTime)/1000.0);

@@ -94,14 +94,25 @@ public class PointSpreadFunction {
 
         System.out.println("gpu kernel init: " + (gpuEnd - gpuStart) + " ms");
 
-//        gpuStart = System.currentTimeMillis();
-//
-//        kernel.execute(range);
-//        kernel.dispose();
-//
-//        gpuEnd = System.currentTimeMillis();
+        gpuStart = System.currentTimeMillis();
+
+        kernel.setup(a, 100);
+        kernel.execute(range);
+        kernel.finish();
+        kernel.dispose();
+
+        psfRed = kernel.psfRed;
+        psfYellow = kernel.psfYellow;
+        psfGreen = kernel.psfGreen;
+        psfCyan = kernel.psfCyan;
+        psfBlue = kernel.psfBlue;
+        psfViolet = kernel.psfViolet;
+
+        gpuEnd = System.currentTimeMillis();
 
         System.out.println("gpu: " + (gpuEnd - gpuStart) + " ms");
+        kernel.getTargetDevice();
+        System.out.println("Execution mode: " + kernel.getExecutionMode());
     }
 
     private void normalizePSF(float[][]... psfs) {
