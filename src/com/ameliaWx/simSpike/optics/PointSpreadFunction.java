@@ -203,7 +203,7 @@ public class PointSpreadFunction {
 
         gpuStart = System.currentTimeMillis();
 
-        kernel.setup(a, 50);
+        kernel.setup(a, 100);
         kernel.execute(range);
         kernel.finish();
         kernel.dispose();

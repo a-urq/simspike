@@ -56,12 +56,16 @@ public class ApertureTest {
                         gammaCorrect(psf.psfBlue[i][j], gamma),
                         gammaCorrect(psf.psfViolet[i][j], gamma));
 
-                g.setColor(colors[i][j].toRGB());
+                g.setColor(correctGreenCast(colors[i][j].toRGB()));
                 g.fillRect(i, j, 1, 1);
             }
         }
 
         return img;
+    }
+
+    private static Color correctGreenCast(Color c) {
+        return new Color(c.getRed(), (int) (0.8 * c.getGreen()), c.getBlue());
     }
 
     private static BufferedImage renderKernel(float[][] kernel) {
