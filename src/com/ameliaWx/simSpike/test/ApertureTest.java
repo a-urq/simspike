@@ -15,7 +15,7 @@ public class ApertureTest {
         testHSTAperture();
     }
 
-    private static final String apertureName = "test-aperture-big";
+    private static final String apertureName = "hst-aperture-thick-big";
     private static final boolean useGPU = true;
     public static void testHSTAperture() throws IOException {
         long startTime = System.currentTimeMillis();
@@ -27,9 +27,12 @@ public class ApertureTest {
 
         String caseTestName = apertureName + (useGPU ? "-gpu" : "");
 
-//        ImageIO.write(renderPSF(psf, 1.0f), "PNG", new File("diffraction-tests/double-slit-diffraction-g1-0.png"));
+        ImageIO.write(renderPSF(psf, 1.0f), "PNG", new File("diffraction-tests/" + caseTestName + "-g1-0.png"));
+        ImageIO.write(renderPSF(psf, 1.5f), "PNG", new File("diffraction-tests/" + caseTestName + "-g1-5.png"));
         ImageIO.write(renderPSF(psf, 2.2f), "PNG", new File("diffraction-tests/" + caseTestName + "-g2-2.png"));
-//        ImageIO.write(renderPSF(psf, 4.0f), "PNG", new File("diffraction-tests/double-slit-diffraction-g4-0.png"));
+        ImageIO.write(renderPSF(psf, 2.8f), "PNG", new File("diffraction-tests/" + caseTestName + "-g2-8.png"));
+        ImageIO.write(renderPSF(psf, 3.5f), "PNG", new File("diffraction-tests/" + caseTestName + "-g3-5.png"));
+        ImageIO.write(renderPSF(psf, 4.0f), "PNG", new File("diffraction-tests/" + caseTestName + "-g4-0.png"));
         long endTime = System.currentTimeMillis();
 
         System.out.printf("PSF Test Time: %.3f s", (endTime - startTime)/1000.0);

@@ -6,16 +6,16 @@ public class FourierTransform2D {
     public ComplexNumber[][] complexAmplitudes;
     public float[][] amplitudes;
     public float[][] phases; // units: radians
-    public float dE; // frequency differential (E looks kinda like a greek xi I guess)
+    public float dw; // frequency differential (E looks kinda like a greek xi I guess)
 
     public FourierTransform2D(float[][] samples, float dx) {
         this.complexAmplitudes = new ComplexNumber[samples.length][samples[0].length];
         this.amplitudes = new float[samples.length][samples[0].length];
         this.phases = new float[samples.length][samples[0].length];
-        this.dE = dx / samples.length;
+        this.dw = dx / samples.length;
 
         for(int i = 0; i < complexAmplitudes.length; i++) {
-            float xi = i * dE;
+            float xi = i * dw;
 //            complexAmplitudes[i] = complexAmplitudeAtFrequency(samples, dx, xi);
 //            amplitudes[i] = complexAmplitudes[i].absoluteValue();
 //            phases[i] = (float) Math.atan2(complexAmplitudes[i].im, complexAmplitudes[i].re);

@@ -1,8 +1,11 @@
 package com.ameliaWx.simSpike.optics;
 
+import com.ameliaWx.simSpike.math.ComplexNumber;
 import com.ameliaWx.simSpike.optics.gpuKernels.PSF_GPUKernel;
-import com.aparapi.Kernel;
 import com.aparapi.Range;
+
+import static com.ameliaWx.simSpike.math.ComplexNumber.I;
+import static com.ameliaWx.simSpike.math.ComplexNumber.ZERO;
 
 public class PointSpreadFunction {
     // have red, yellow, green, cyan, blue, and violet kernels
@@ -45,6 +48,21 @@ public class PointSpreadFunction {
     }
 
     public void initializeWithCPU(Aperture a) {
+        initializeWithCPU(a, Method.NAIVE);
+    }
+
+    private void initializeWithCPU(Aperture a, Method m) {
+        switch (m) {
+            case NAIVE:
+                initializeNaiveCPU(a);
+                break;
+            case ROW_COLUMN:
+                initializeRowColumnCPU(a);
+                break;
+        }
+    }
+
+    private void initializeNaiveCPU(Aperture a) {
         psfRed = new float[a.apertureMap.length][a.apertureMap[0].length];
         psfYellow = new float[a.apertureMap.length][a.apertureMap[0].length];
         psfGreen = new float[a.apertureMap.length][a.apertureMap[0].length];
@@ -56,7 +74,7 @@ public class PointSpreadFunction {
         float dy1 = 2.0f * a.yMax / (a.apertureMap[0].length - 1);
         float x1_0 = -a.xMax;
         float y1_0 = -a.yMax;
-        final float Z = 100.0f; // must be at least the pixel width of the aperture map to avoid nyquisting (at least before interpolation being implemented)
+        final float Z = 50.0f; // must be at least the pixel width of the aperture map to avoid nyquisting (at least before interpolation being implemented)
         for(int i = 0; i < psfRed.length; i++) {
             for(int j = 0; j < psfRed[0].length; j++) {
                 System.out.println(i + "\t" + j);
@@ -73,12 +91,101 @@ public class PointSpreadFunction {
             }
         }
 
-        normalizePSF(psfRed);
-        normalizePSF(psfYellow);
-        normalizePSF(psfGreen);
-        normalizePSF(psfCyan);
-        normalizePSF(psfBlue);
-        normalizePSF(psfViolet);
+//        normalizePSF(psfRed);
+//        normalizePSF(psfYellow);
+//        normalizePSF(psfGreen);
+//        normalizePSF(psfCyan);
+//        normalizePSF(psfBlue);
+//        normalizePSF(psfViolet);
+
+        normalizePSF(psfRed, psfYellow, psfGreen, psfCyan, psfBlue, psfViolet);
+    }
+
+    private void initializeRowColumnCPU(Aperture a) {
+        final float Z = 100.0f; // must be at least the pixel width of the aperture map to avoid nyquisting (at least before interpolation being implemented)
+
+        psfRed = transformForFrequencyRC(a, WAVELENGTH_RED, Z);
+        psfYellow = transformForFrequencyRC(a, WAVELENGTH_YELLOW, Z);
+        psfGreen = transformForFrequencyRC(a, WAVELENGTH_GREEN, Z);
+        psfCyan = transformForFrequencyRC(a, WAVELENGTH_CYAN, Z);
+        psfBlue = transformForFrequencyRC(a, WAVELENGTH_BLUE, Z);
+        psfViolet = transformForFrequencyRC(a, WAVELENGTH_VIOLET, Z);
+    }
+
+    private float[][] transformForFrequencyRC(Aperture a, float wavelength, float z) {
+        // here w represents x-frequency, f represents y-frequency. don't question it i just gotta have something
+        ComplexNumber[][] aperture_xf = transformRows(a.apertureMap, a.yMax, wavelength, z);
+        ComplexNumber[][] aperture_fx = transpose(aperture_xf);
+        ComplexNumber[][] aperture_fw = transformRows(aperture_fx, a.xMax, wavelength, z);
+        ComplexNumber[][] aperture_wf = transpose(aperture_fw);
+
+        ComplexNumber[][] rawFourierTransform = aperture_wf;
+        //something something coefficients or some shit
+
+        float[][] psf = new float[rawFourierTransform.length][rawFourierTransform[0].length];
+        return psf;
+    }
+
+    private ComplexNumber[][] transformRows(float[][] a, float axisMax, float wavelengthNm, float z) {
+        ComplexNumber[][] c = new ComplexNumber[a.length][a[0].length];
+        for(int i = 0; i < c.length; i++) {
+            for(int j = 0; j < c[i].length; j++) {
+                c[i][j] = new ComplexNumber(a[i][j], 0);
+            }
+        }
+
+        return transformRows(c, axisMax, wavelengthNm, z);
+    }
+
+    private ComplexNumber[][] transformRows(ComplexNumber[][] a, float axisMax, float wavelengthNm, float z) {
+        ComplexNumber[][] ret = new ComplexNumber[a.length][a[0].length];
+
+        float dx1 = 2.0f * axisMax / (a.length - 1);
+        float x1_0 = -axisMax;
+
+        float dx0 = 2.0f * axisMax / (a.length - 1);
+
+        float wavelengthMm = (float) (wavelengthNm / Math.pow(10, 6));
+        float k = (float) (2 * Math.PI / wavelengthMm); // wavenumber
+
+        for(int i = 0; i < psfRed.length; i++) {
+            for (int j = 0; j < psfRed[0].length; j++) {
+                float x1 = x1_0 + j * dx1;
+
+                ComplexNumber sum = ZERO;
+                int j0 = 0;
+                for (float x0 = -axisMax; x0 <= axisMax; x0 += dx0) {
+                    float dotProd = x0 * x1;
+                    float kz = -k / z;
+
+                    ComplexNumber expI = ComplexNumber.exp(I.mult(kz*dotProd));
+
+                    expI = expI.mult(a[i][j0]);
+
+                    float E = 1; // constant if a plane wave
+                    expI = expI.mult(E);
+
+                    ComplexNumber integrand = expI.mult(dx0); // mult by area element
+
+                    sum = sum.add(integrand);
+                    j0++;
+                }
+            }
+        }
+
+        return ret;
+    }
+
+    private ComplexNumber[][] transpose(ComplexNumber[][] a) {
+        ComplexNumber[][] b = new ComplexNumber[a[0].length][a.length];
+
+        for(int i = 0; i < a.length; i++) {
+            for(int j = 0; j < a[0].length; j++) {
+                b[j][i] = a[i][j];
+            }
+        }
+
+        return b;
     }
 
     public void initializeWithGPU(Aperture a) {
@@ -88,7 +195,7 @@ public class PointSpreadFunction {
 
         long gpuStart = System.currentTimeMillis();
 
-        kernel.execute(Range.create(1));
+//        kernel.execute(Range.create(1));
 
         long gpuEnd = System.currentTimeMillis();
 
@@ -96,7 +203,7 @@ public class PointSpreadFunction {
 
         gpuStart = System.currentTimeMillis();
 
-        kernel.setup(a, 100);
+        kernel.setup(a, 50);
         kernel.execute(range);
         kernel.finish();
         kernel.dispose();
@@ -113,6 +220,11 @@ public class PointSpreadFunction {
         System.out.println("gpu: " + (gpuEnd - gpuStart) + " ms");
         kernel.getTargetDevice();
         System.out.println("Execution mode: " + kernel.getExecutionMode());
+
+        long normStart = System.currentTimeMillis();
+        normalizePSF(psfRed, psfYellow, psfGreen, psfCyan, psfBlue, psfViolet);
+        long normEnd = System.currentTimeMillis();
+        System.out.println("normalization: " + (normEnd - normStart) + " ms");
     }
 
     private void normalizePSF(float[][]... psfs) {
@@ -141,5 +253,9 @@ public class PointSpreadFunction {
         }
 
         return max;
+    }
+
+    private enum Method {
+        NAIVE, ROW_COLUMN;
     }
 }
