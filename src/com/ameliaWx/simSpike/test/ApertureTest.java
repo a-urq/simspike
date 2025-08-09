@@ -65,7 +65,7 @@ public class ApertureTest {
     }
 
     private static Color correctGreenCast(Color c) {
-        return new Color(c.getRed(), (int) (0.8 * c.getGreen()), c.getBlue());
+        return new Color(c.getRed(), (int) (0.80 * c.getGreen()), c.getBlue());
     }
 
     private static BufferedImage renderKernel(float[][] kernel) {
